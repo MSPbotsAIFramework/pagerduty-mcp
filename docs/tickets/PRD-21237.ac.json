@@ -1,0 +1,156 @@
+[
+  {
+    "id": "TC1",
+    "ac": "AC1",
+    "text": "Given a tool call carries a valid X-PagerDuty-Api-Key header, when the tool calls PagerDuty, then the upstream request carries Authorization: Token token=<that key> and the tool returns PagerDuty's data.",
+    "type": "auto",
+    "tests": ["tests/test_middleware.py::test_api_key_header_is_forwarded_as_authorization_token (planned)"]
+  },
+  {
+    "id": "TC2",
+    "ac": "AC2",
+    "text": "Given X-PagerDuty-Api-Key is missing, when any read tool is called, then the server responds 401 listing the missing header, and no call is made to PagerDuty.",
+    "type": "auto",
+    "tests": ["tests/test_middleware.py::test_missing_api_key_is_401_with_no_upstream_call (planned)"]
+  },
+  {
+    "id": "TC3",
+    "ac": "AC2",
+    "text": "Given X-PagerDuty-Api-Key is present but X-PagerDuty-From-Email is missing, when a write tool (e.g. pagerduty_incidents_update) is called, then the server responds 401 listing the missing header, and no call is made to PagerDuty.",
+    "type": "auto",
+    "tests": ["tests/test_middleware.py::test_missing_from_email_on_write_tool_is_401 (planned)"]
+  },
+  {
+    "id": "TC4",
+    "ac": "AC3",
+    "text": "Given incidents exist, when pagerduty_incidents_list is called with no filters, then it returns items/count/limit/offset/has_more (and next_offset when has_more is true).",
+    "type": "auto",
+    "tests": ["tests/test_handlers.py::test_incidents_list_returns_paginated_envelope (planned)"]
+  },
+  {
+    "id": "TC5",
+    "ac": "AC3",
+    "text": "Given pagerduty_incidents_list is called with limit=500, when the request is built, then the limit sent to PagerDuty is capped at 100, not passed through unbounded.",
+    "type": "auto",
+    "tests": ["tests/test_argument_errors.py::test_incidents_list_limit_is_capped_at_100 (planned)"]
+  },
+  {
+    "id": "TC6",
+    "ac": "AC4",
+    "text": "Given an incident id that exists, when pagerduty_incidents_get is called with include_notes=true, then the response includes the incident's core fields plus its notes.",
+    "type": "auto",
+    "tests": ["tests/test_handlers.py::test_incidents_get_with_include_notes_returns_notes (planned)"]
+  },
+  {
+    "id": "TC7",
+    "ac": "AC4",
+    "text": "Given an incident id that does not exist, when pagerduty_incidents_get is called, then the tool returns a not_found envelope naming that id.",
+    "type": "auto",
+    "tests": ["tests/test_records.py::test_incidents_get_missing_incident_is_not_found (planned)"]
+  },
+  {
+    "id": "TC8",
+    "ac": "AC5",
+    "text": "Given a valid service_id and a title, when pagerduty_incidents_create is called, then PagerDuty triggers a new incident on that service and the tool returns the created incident including its new id.",
+    "type": "auto",
+    "tests": ["tests/test_handlers.py::test_incidents_create_triggers_new_incident (planned)"]
+  },
+  {
+    "id": "TC9",
+    "ac": "AC6",
+    "text": "Given an open incident id, when pagerduty_incidents_update is called with status=\"acknowledged\", then the incident's status becomes acknowledged in the tool's response.",
+    "type": "auto",
+    "tests": ["tests/test_handlers.py::test_incidents_update_acknowledges_open_incident (planned)"]
+  },
+  {
+    "id": "TC10",
+    "ac": "AC6",
+    "text": "Given an incident already in status \"acknowledged\", when pagerduty_incidents_update is called again with status=\"acknowledged\", then the call succeeds as a no-op and the returned status is unchanged.",
+    "type": "auto",
+    "tests": ["tests/test_handlers.py::test_incidents_update_is_idempotent_on_matching_status (planned)"]
+  },
+  {
+    "id": "TC11",
+    "ac": "AC7",
+    "text": "Given an existing incident id and a target assignee user id, when pagerduty_incidents_update is called with assignee_user_ids=[that id], then PagerDuty reassigns the incident and the tool's response reflects the new assignee.",
+    "type": "auto",
+    "tests": ["tests/test_handlers.py::test_incidents_update_reassigns_to_given_users (planned)"]
+  },
+  {
+    "id": "TC12",
+    "ac": "AC8",
+    "text": "Given an existing incident id and note text, when pagerduty_incidents_add_note is called, then a follow-up pagerduty_incidents_get(include_notes=true) shows that note (id, content, author, timestamp) on the incident's timeline.",
+    "type": "auto",
+    "tests": ["tests/test_handlers.py::test_incidents_add_note_appears_on_incident_timeline (planned)"]
+  },
+  {
+    "id": "TC13",
+    "ac": "AC9",
+    "text": "Given escalation policies exist, when pagerduty_escalation_policies_list/_get is called, then the policy's escalation rules and targets are returned, and no update/delete tool exists for this resource in the published tool table.",
+    "type": "auto",
+    "tests": [
+      "tests/test_handlers.py::test_escalation_policies_get_returns_rules_and_targets (planned)",
+      "tests/test_tools.py::test_no_write_tool_exists_for_escalation_policies (planned)"
+    ]
+  },
+  {
+    "id": "TC14",
+    "ac": "AC10",
+    "text": "Given an existing on-call schedule, when pagerduty_schedules_get is called, then its layers and time zone are returned, and no update/delete tool exists for schedules in the published tool table.",
+    "type": "auto",
+    "tests": [
+      "tests/test_handlers.py::test_schedules_get_returns_layers_and_timezone (planned)",
+      "tests/test_tools.py::test_no_write_tool_exists_for_schedules (planned)"
+    ]
+  },
+  {
+    "id": "TC15",
+    "ac": "AC10",
+    "text": "Given on-call assignments exist for the current time, when pagerduty_oncalls_list is called with no time window (defaults to now) and no filters, then the currently on-call user(s) are returned.",
+    "type": "auto",
+    "tests": ["tests/test_handlers.py::test_oncalls_list_defaults_to_now (planned)"]
+  },
+  {
+    "id": "TC16",
+    "ac": "AC11",
+    "text": "Given a resolved incident, when pagerduty_incident_reviews_create is called for it and then pagerduty_incident_reviews_get(include_action_items=true) is called on the result, then the created review is returned together with its action items (possibly an empty list).",
+    "type": "auto",
+    "tests": ["tests/test_handlers.py::test_incident_reviews_create_then_get_with_action_items (planned)"]
+  },
+  {
+    "id": "TC17",
+    "ac": "AC12",
+    "text": "Given PagerDuty responds 429 with a Retry-After header, when any tool calls it, then the tool returns {\"error\": {\"code\": \"rate_limited\", \"retryable\": true, ...}} after respecting the documented single-call retry budget, not an unhandled exception.",
+    "type": "auto",
+    "tests": ["tests/test_records.py::test_429_maps_to_rate_limited_and_respects_retry_after (planned)"]
+  },
+  {
+    "id": "TC18",
+    "ac": "AC12",
+    "text": "Given PagerDuty responds 500, when any tool calls it, then the tool returns {\"error\": {\"code\": \"upstream_error\", \"retryable\": true, ...}}, never a raw 500 to the caller.",
+    "type": "auto",
+    "tests": ["tests/test_records.py::test_5xx_maps_to_upstream_error (planned)"]
+  },
+  {
+    "id": "TC19",
+    "ac": "AC13",
+    "text": "Given two concurrent requests carry two different X-PagerDuty-Api-Key values, when both call the same tool at the same time, then each request's outbound PagerDuty call uses only the key sent on that request, with no response or cached state leaking between them.",
+    "type": "auto",
+    "tests": ["tests/test_middleware.py::test_concurrent_requests_do_not_leak_credentials_across_tenants (planned)"]
+  },
+  {
+    "id": "TC20",
+    "ac": "AC14",
+    "text": "Given this connector is registered on the platform with credential_fields X-PagerDuty-Api-Key and X-PagerDuty-From-Email, when an admin opens \"Connect PagerDuty\" from the platform's connector Library, then the rendered credential form shows exactly those two fields and, once saved, the connector detail view lists all 14 tools.",
+    "type": "manual",
+    "steps": [
+      "Register the connector on the platform (mcppub register) and have it published to a test tenant's Library",
+      "As that tenant, open the Agent platform Library and click the PagerDuty connector card",
+      "Read the rendered 'Connect PagerDuty' credential form's field list",
+      "Save with placeholder/real credentials and open the connector's detail view"
+    ],
+    "expect": "The credential form shows exactly two fields matching X-PagerDuty-Api-Key and X-PagerDuty-From-Email (no extra or missing fields); after saving, the detail view's Tools tab lists 14 tools with an Available badge",
+    "result": "untested",
+    "notes": "Needs a real connector registration and a live platform tenant; not automatable in this repo's own test suite. Not a blocker to development or to reaching 6b/INT (mcp-track.md 2.5/3)."
+  }
+]
