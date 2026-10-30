@@ -1,0 +1,6 @@
+services:
+  pagerduty-mcp:
+    build: .
+    image: pagerduty-mcp:local
+    ports:
+      - "8080:8080"
